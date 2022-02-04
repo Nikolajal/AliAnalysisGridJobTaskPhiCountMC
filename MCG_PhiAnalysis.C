@@ -7,12 +7,16 @@
 #include "TProfile.h"
 #include "TProfile2D.h"
 #include "TH1F.h"
+#include "TTree.h"
 
 using namespace std;
 using namespace ROOT;
 using namespace Pythia8;
 
 TBenchmark *fBenchmark      =   new TBenchmark();
+
+const auto fMinIMMC = 0.75;
+const auto fMaxIMMC = 1.25;
 
 TString     fMSG_PrintTimer =   "[INFO] Event # %4.f %s | %02.0f %% | %2.2f %s events/s | Time: %02.0f:%02.0f | ETA: %02.0f:%02.0f \n";
 //
@@ -90,9 +94,6 @@ main
         cout << "Please use as: ./GeneratorMC [filename] [nevents] [seed] [option] [Energy]" << endl;
         return -1;
     }
-    
-    // Setting bins
-    fSetBinPT2D();
     
     // Definition of number of events
     int   nEvents = atoi(argv[2]);
