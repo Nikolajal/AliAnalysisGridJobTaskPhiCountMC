@@ -14,33 +14,6 @@ using namespace Pythia8;
 
 TBenchmark *fBenchmark      =   new TBenchmark();
 
-//-// InvMass range Pythia MC
-const   float   fMinIMMC  =   0.75;
-const   float   fMaxIMMC  =   1.25;
-
-
-//-// pT bins 2D
-const   Int_t     nBinPT2D  =   10;
-const   Float_t   fMinPT2D  =   0.4;
-const   Float_t   fMaxPT2D  =   10.;
-        Float_t  *fArrPT2D  =   new Float_t [nBinPT2D+1];
-        Float_t  *fArrPT2D_Comp  =   new Float_t [nBinPT2D+2];
-void
-fSetBinPT2D
-()      {
-    fArrPT2D[0]     =   0.40; //0.3
-    fArrPT2D[1]     =   0.80; //0.2
-    fArrPT2D[2]     =   1.00; //0.1
-    fArrPT2D[3]     =   1.10; //0.1
-    fArrPT2D[4]     =   1.20; //0.2
-    fArrPT2D[5]     =   1.40; //0.2
-    fArrPT2D[6]     =   1.60; //0.4
-    fArrPT2D[7]     =   2.00; //0.8
-    fArrPT2D[8]     =   2.80; //1.2
-    fArrPT2D[9]     =   4.00; //6.0
-    fArrPT2D[10]    =   10.0;
-}
-
 TString     fMSG_PrintTimer =   "[INFO] Event # %4.f %s | %02.0f %% | %2.2f %s events/s | Time: %02.0f:%02.0f | ETA: %02.0f:%02.0f \n";
 //
 //_____________________________________________________________________________
@@ -112,9 +85,9 @@ int
 main
  ( int argc, char *argv[] ) {
     // Check everything is good
-    if (argc < 4 )  {
+    if (argc < 5 )  {
         cout << "ERROR: Insufficient parameters given!" << endl;
-        cout << "Please use as: ./GeneratorMC [filename] [nevents] [seed] [option]" << endl;
+        cout << "Please use as: ./GeneratorMC [filename] [nevents] [seed] [option] [Energy]" << endl;
         return -1;
     }
     
@@ -127,42 +100,23 @@ main
     // Definition of option
     int   fOption = argc < 4 ? 0 : atoi(argv[4]);
     
-    // Input File
-    TFile * inHIFile    = new   TFile   ("/Users/nikolajal/alice/AliAnalysisPhiCount/DATA/COMMON_sysErrRelInleasticXSec.root");
-    TFile * inMBFile    = new   TFile   ("/Users/nikolajal/alice/AliAnalysisPhiCount/DATA/COMMON_sysErrRelMaterial.root");
-    
-    // Input File
-    TH1F*   inHIRefKplus        =   (TH1F*)(inHIFile->Get("hKaonPlusMinBiasSysErrRel"));
-    TH1F*   inHIRefKminus       =   (TH1F*)(inHIFile->Get("hKaonMinusMinBiasSysErrRel"));
-    TH1F*   inMBRefKplus        =   (TH1F*)(inMBFile->Get("hKaonMinusMinBiasSysErrRel"));
-    TH1F*   inMBRefKminus       =   (TH1F*)(inMBFile->Get("hKaonMinusMinBiasSysErrRel"));
-    
+    // Definition of energy
+    int   kEnergy = argc < 5 ? 7000 : atoi(argv[5]);
+
     // Output File
-    TFile * outFile     = new   TFile   (Form("%s.root",argv[1]),   "recreate", "", 101);
+    TFile * outFile     =   new   TFile   (Form("%s.root",argv[1]),   "recreate", "", 101);
     
-    // Output - Standard
-    TProfile*   hMeanPT     =   new TProfile("hMeanPT","hMeanPT",nBinPT2D,fArrPT2D);
-    TProfile*   hHISysErr   =   new TProfile("hHISysErr","hHISysErr",100,0,20);
-    TProfile*   hMBSysErr   =   new TProfile("hMBSysErr","hMBSysErr",100,0,20);
-    TProfile2D* hHISysEr2   =   new TProfile2D("hHISysEr2","hHISysEr2",100,0,10,100,0,20);
-    TProfile2D* hMBSysEr2   =   new TProfile2D("hMBSysEr2","hMBSysEr2",100,0,10,100,0,20);
-    TProfile*   hYPhiProd   =   new TProfile("hYPhiProd","hYPhiProd",10,-0.5,9.5);
-    TProfile*   hYPhiPro1   =   new TProfile("hYPhiPro1","hYPhiPro1",100,0.,100.);
-    TProfile*   hYPhiPro2   =   new TProfile("hYPhiPro2","hYPhiPro2",100,0.,100.);
-    TH1F*       hPhiProd    =   new TH1F("hPhiProd","hPhiProd",10,-0.5,9.5);
-    //
-    //  --- Output Correlation search
-    TH2F*       hRapCorrXiPM            =   new TH2F("hRapCorrXiPM",        "hRapCorrXiPM",         500,-10,10,     500,-10,10);
-    TH2F*       hRapCorrXiPP            =   new TH2F("hRapCorrXiPP",        "hRapCorrXiPP",         500,-10,10,     500,-10,10);
-    TH2F*       hRapCorrXiMM            =   new TH2F("hRapCorrXiMM",        "hRapCorrXiMM",         500,-10,10,     500,-10,10);
-    TH1F*       hRapCorrXiPM1D          =   new TH1F("hRapCorrXiPM1D",      "hRapCorrXiPM1D",       500,-10,10);
-    TH1F*       hPhiCorrXiPM1D          =   new TH1F("hPhiCorrXiPM1D",      "hPhiCorrXiPM1D",       360,-180,180);
-    //
-    TH2F*       hRapCorrPhi             =   new TH2F("hRapCorrPhi",         "hRapCorrPhi",          500,-10,10,     500,-10,10);
-    TH1F*       hRapCorrPhi1D           =   new TH1F("hRapCorrPhi1D",       "hRapCorrPhi1D",        500,-10,10);
-    TH1F*       hPhiCorrPhi1D           =   new TH1F("hPhiCorrPhi1D",       "hPhiCorrPhi1D",        360,-180,180);
-    TH1F*       hPhiCorrPhi1D_BKG       =   new TH1F("hPhiCorrPhi1D_BKG",   "hPhiCorrPhi1D_BKG",    360,-180,180);
-    //
+    //Output Tree
+    Int_t   nPhi;
+    Float_t fPx[1024];
+    Float_t fPy[1024];
+    Float_t fPz[1024];
+    TTree*  outTree     =   new TTree(Form("Phi_S%I_E%i_M%i",atoi(argv[3]),kEnergy,fOption),Form("Phi_S%I_E%i_M%i",atoi(argv[3]),kEnergy,fOption));
+    outTree->Branch       ("nPhi",  &nPhi,  "nPhi/I");
+    outTree->Branch       ("fPx",   &fPx,   "fPx[nPhi]/F");
+    outTree->Branch       ("fPy",   &fPy,   "fPy[nPhi]/F");
+    outTree->Branch       ("fPz",   &fPz,   "fPz[nPhi]/F");
+    
     // PYTHIA INITIALISATION
     Pythia8::Pythia pythia;
     
@@ -171,12 +125,11 @@ main
     pythia.readString("ParticleDecays:limitTau0 = on");
     pythia.readString("Beams:idA = 2212");
     pythia.readString("Beams:idB = 2212");
-    pythia.readString("Beams:eCM = 5000");
+    pythia.readString(Form("Beams:eCM = %i",kEnergy));
     pythia.readString(Form("333:mMin = %f",fMinIMMC));
     pythia.readString(Form("333:mMax = %f",fMaxIMMC));
     //
     pythia.readString("Random:setSeed = on");
-    pythia.readString(Form("Random:seed = %i",atoi(argv[3])));
     pythia.readString("Print:quiet = on");
     pythia.readString(Form("Random:seed = %i",atoi(argv[3])));
     switch (fOption)
@@ -339,8 +292,6 @@ main
         pythia.next();
         fPrintLoopTimer("Production",iEvent,nEvents,10000);
         //
-        std::vector<Float_t> vMeanPT;
-        //
         std::vector<Int_t>  kLabel_P3312_XiMinus;
         std::vector<Int_t>  kLabel_M3312_XiPlus;
         std::vector<Int_t>  kLabel_P0333_Phi;
@@ -348,19 +299,19 @@ main
         std::vector<Int_t>  kLabel_M0321_KaonMinus;
         //
         // Starting cycling through event particles
-        auto nPhi   =   0;
+        nPhi   =   0;
         auto nMultiplicity  =   0;
         for ( int iParticle = 0; iParticle < pythia.event.size() ; iParticle++ )
         {
             // Saving particles
             const auto Current_Particle = pythia.event[iParticle];
             
-            // Storing True Phis
-            if ( Current_Particle.id() == +3312 && (fabs(Current_Particle.p().rap()) < 0.5) )   kLabel_P3312_XiMinus    .push_back(iParticle);
-            if ( Current_Particle.id() == -3312 && (fabs(Current_Particle.p().rap()) < 0.5) )   kLabel_M3312_XiPlus     .push_back(iParticle);
-            if ( Current_Particle.id() == +333  && (fabs(Current_Particle.p().rap()) < 0.5) )   kLabel_P0333_Phi        .push_back(iParticle);
-            if ( Current_Particle.id() == +321  && (fabs(Current_Particle.p().rap()) < 0.5) )   kLabel_P0321_KaonPlus   .push_back(iParticle);
-            if ( Current_Particle.id() == -321  && (fabs(Current_Particle.p().rap()) < 0.5) )   kLabel_M0321_KaonMinus  .push_back(iParticle);
+            // Storing True Particles
+            if ( Current_Particle.id() == +3312 && (fabs(Current_Particle.p().rap()) < 1.5) )   kLabel_P3312_XiMinus    .push_back(iParticle);
+            if ( Current_Particle.id() == -3312 && (fabs(Current_Particle.p().rap()) < 1.5) )   kLabel_M3312_XiPlus     .push_back(iParticle);
+            if ( Current_Particle.id() == +333  && (fabs(Current_Particle.p().rap()) < 1.5) )   kLabel_P0333_Phi        .push_back(iParticle);
+            if ( Current_Particle.id() == +321  && (fabs(Current_Particle.p().rap()) < 1.5) )   kLabel_P0321_KaonPlus   .push_back(iParticle);
+            if ( Current_Particle.id() == -321  && (fabs(Current_Particle.p().rap()) < 1.5) )   kLabel_M0321_KaonMinus  .push_back(iParticle);
             
             //  Calculating Multiplicity
             
@@ -378,123 +329,21 @@ main
             
         }
         //
-        //  Correlation Search
-        //
-        for ( auto iXiPlus : kLabel_M3312_XiPlus )   {
-            const auto  iParticle_XiPlus    =   pythia.event[iXiPlus];
-            const auto  iRapidity_XiPlus    =   iParticle_XiPlus.p().rap();
-            for ( auto jXiPlus : kLabel_M3312_XiPlus )   {
-                if ( iXiPlus == jXiPlus ) continue;
-                const auto  jParticle_XiPlus    =   pythia.event[jXiPlus];
-                const auto  jRapidity_XiPlus    =   jParticle_XiPlus.p().rap();
-                hRapCorrXiPP    ->  Fill    ( iRapidity_XiPlus, jRapidity_XiPlus );
-            }
-            for ( auto jXiMinus : kLabel_P3312_XiMinus )   {
-                const auto  jParticle_XiMinus    =   pythia.event[jXiMinus];
-                const auto  jRapidity_XiMinus    =   jParticle_XiMinus.p().rap();
-                hRapCorrXiPM        ->  Fill    ( iRapidity_XiPlus, jRapidity_XiMinus );
-                hRapCorrXiPM1D      ->  Fill    ( iRapidity_XiPlus - jRapidity_XiMinus );
-                auto    kDeltaPhi   =   ( iParticle_XiPlus.phi() - jParticle_XiMinus.phi()  )*360/( TMath::Pi()*2 );
-                kDeltaPhi = kDeltaPhi < -180 ? kDeltaPhi + 360 : kDeltaPhi > 180 ? kDeltaPhi -360 : kDeltaPhi;
-                hPhiCorrXiPM1D      ->  Fill    ( kDeltaPhi );
-            }
-        }
-        for ( auto iPhi : kLabel_P0333_Phi )   {
-            const auto  iParticle_Phi       =   pythia.event[iPhi];
-            const auto  iRapidity_Phi       =   iParticle_Phi.p().rap();
-            for ( auto jPhi : kLabel_P0333_Phi )   {
-                if ( iPhi >= jPhi ) continue;
-                const auto  jParticle_Phi       =   pythia.event[jPhi];
-                const auto  jRapidity_Phi       =   jParticle_Phi.p().rap();
-                hRapCorrPhi         ->  Fill    ( iRapidity_Phi, jRapidity_Phi );
-                hRapCorrPhi1D       ->  Fill    ( iRapidity_Phi - jRapidity_Phi );
-                auto    kDeltaPhi   =   ( iParticle_Phi.phi() - jParticle_Phi.phi()  )*360/( TMath::Pi()*2 );
-                kDeltaPhi = kDeltaPhi < -180 ? kDeltaPhi + 360 : kDeltaPhi > 180 ? kDeltaPhi -360 : kDeltaPhi;
-                hPhiCorrPhi1D       ->  Fill    ( kDeltaPhi );
-            }
-        }
-        //
-        //  Standard
-        //
-        for ( auto kiPhi : kLabel_P0333_Phi ) {
+        //  Save for later
+        for ( auto kCurrent_Phi : kLabel_P0333_Phi )    {
             // Saving particles
-            const auto  Current_Particle    =   pythia.event[kiPhi];
-            const auto  uUtilityPhiRap      =   Current_Particle.p().rap();
+            const auto Current_Particle = pythia.event[kCurrent_Phi];
             //
+            fPx[nPhi]   =   Current_Particle.px();
+            fPy[nPhi]   =   Current_Particle.py();
+            fPz[nPhi]   =   Current_Particle.pz();
             nPhi++;
-            vMeanPT.push_back(Current_Particle.pT());
-            if ( Current_Particle.daughterList().size() != 2 ) continue;
-            auto    nKaon1  =   Current_Particle.daughter1();
-            auto    fKaon1  =   pythia.event[nKaon1];
-            if ( fabs( fKaon1.id() ) != 321 ) continue;
-            auto    nKaon2  =   Current_Particle.daughter2();
-            auto    fKaon2  =   pythia.event[nKaon2];
-            if ( fabs( fKaon2.id() ) != 321 ) continue;
-            for ( auto iKmnus = kLabel_M0321_KaonMinus.begin(); iKmnus != kLabel_M0321_KaonMinus.end(); ++iKmnus ) { if ( (*iKmnus == Current_Particle.daughter1()) || (*iKmnus == Current_Particle.daughter2()) ){ kLabel_M0321_KaonMinus.erase(iKmnus); break; }  }
-            for ( auto iKplus = kLabel_P0321_KaonPlus.begin(); iKplus != kLabel_P0321_KaonPlus.end(); ++iKplus ) { if ( (*iKplus == Current_Particle.daughter1()) || (*iKplus == Current_Particle.daughter2()) ){ kLabel_P0321_KaonPlus.erase(iKplus); break; } }
-            auto    fUncerHI1   =   fKaon1.charge() > 0 ? inHIRefKplus->GetBinContent( inHIRefKplus->FindBin( min(fKaon1.pT(),1.299) ) ) : inHIRefKminus->GetBinContent( inHIRefKminus->FindBin( fKaon1.pT() ) ) ;
-            auto    fUncerMB1   =   fKaon1.charge() > 0 ? inMBRefKplus->GetBinContent( inMBRefKplus->FindBin( min(fKaon1.pT(),1.299) ) ) : inMBRefKminus->GetBinContent( inMBRefKminus->FindBin( fKaon1.pT() ) ) ;
-            auto    fUncerHI2   =   fKaon2.charge() > 0 ? inHIRefKplus->GetBinContent( inHIRefKplus->FindBin( min(fKaon2.pT(),1.299) ) ) : inHIRefKminus->GetBinContent( inHIRefKminus->FindBin( fKaon2.pT() ) ) ;
-            auto    fUncerMB2   =   fKaon2.charge() > 0 ? inHIRefKplus->GetBinContent( inHIRefKplus->FindBin( min(fKaon2.pT(),1.299) ) ) : inMBRefKminus->GetBinContent( inHIRefKminus->FindBin( fKaon2.pT() ) ) ;
-            hMBSysErr->Fill(Current_Particle.pT(), fUncerMB1 + fUncerMB2 );
-            hHISysErr->Fill(Current_Particle.pT(), fUncerHI1 + fUncerHI2 );
-            for ( auto kjPhi : kLabel_P0333_Phi ) {
-                // Saving particles
-                if ( kiPhi == kjPhi ) continue;
-                const auto Current_Particl2 = pythia.event[kjPhi];
-                if ( Current_Particl2.daughterList().size() != 2 ) continue;
-                auto    nKao21  =   Current_Particl2.daughter1();
-                auto    fKao21  =   pythia.event[nKao21];
-                if ( fabs( fKao21.id() ) != 321 ) continue;
-                auto    nKao22  =   Current_Particl2.daughter2();
-                auto    fKao22  =   pythia.event[nKao22];
-                if ( fabs( fKao22.id() ) != 321 ) continue;
-                auto    fUnce2HI1   =   fKao21.charge() > 0 ? inHIRefKplus->GetBinContent( inHIRefKplus->FindBin( min(fKao21.pT(),1.299) ) ) : inHIRefKminus->GetBinContent( inHIRefKminus->FindBin( fKao21.pT() ) ) ;
-                auto    fUnce2MB1   =   fKao21.charge() > 0 ? inMBRefKplus->GetBinContent( inMBRefKplus->FindBin( min(fKao21.pT(),1.299) ) ) : inMBRefKminus->GetBinContent( inMBRefKminus->FindBin( fKao21.pT() ) ) ;
-                auto    fUnce2HI2   =   fKao22.charge() > 0 ? inHIRefKplus->GetBinContent( inHIRefKplus->FindBin( min(fKao22.pT(),1.299) ) ) : inHIRefKminus->GetBinContent( inHIRefKminus->FindBin( fKao22.pT() ) ) ;
-                auto    fUnce2MB2   =   fKao22.charge() > 0 ? inMBRefKplus->GetBinContent( inHIRefKplus->FindBin( min(fKao22.pT(),1.299) ) ) : inMBRefKminus->GetBinContent( inHIRefKminus->FindBin( fKao22.pT() ) ) ;
-                hMBSysEr2->Fill(Current_Particle.pT(), Current_Particl2.pT(), fUncerMB1 + fUncerMB2 + fUnce2MB1 + fUnce2MB2, 0.5 );
-                hHISysEr2->Fill(Current_Particle.pT(), Current_Particl2.pT(), fUncerHI1 + fUncerHI2 + fUnce2HI1 + fUnce2HI2, 0.5 );
-            }
         }
-        hYPhiProd->Fill(1,nPhi);
-        hYPhiProd->Fill(2,nPhi*(nPhi-1)*0.5);
-        hYPhiPro1->Fill(nMultiplicity,nPhi);
-        hYPhiPro2->Fill(nMultiplicity,nPhi*(nPhi-1)*0.5);
-        hPhiProd->Fill(nPhi);
-        if ( nPhi < 2 ) continue;
-        for ( auto iPT : vMeanPT )   {
-            for ( auto jPT : vMeanPT )   {
-                if ( iPT == jPT ) continue;
-                hMeanPT->Fill(iPT,jPT);
-            }
-        }
+        outTree->Fill();
     }
-    
     fStopTimer("Production");
     //
-    hRapCorrXiPP->Write();
-    hRapCorrXiMM->Write();
-    hRapCorrXiPM->Write();
-    hRapCorrXiPM1D->Write();
-    hPhiCorrXiPM1D->Write();
-    hRapCorrPhi ->Write();
-    hRapCorrPhi1D->Write();
-    hPhiCorrPhi1D->Write();
-    hPhiCorrPhi1D_BKG->Write();
-    //
-    hPhiProd->Scale(1./nEvents);
-    hHISysErr->Write();
-    hMBSysErr->Write();
-    hHISysEr2->Write();
-    hMBSysEr2->Write();
-    hYPhiProd->Write();
-    hYPhiPro1->Write();
-    hYPhiPro2->Write();
-    hMeanPT->Write();
-    hPhiProd->Write();
-    //
-    
+    outTree->Write();
     //
     outFile     ->Close();
     return 0;
