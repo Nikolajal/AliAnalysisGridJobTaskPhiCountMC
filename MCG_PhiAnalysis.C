@@ -112,11 +112,14 @@ main
     Float_t fPx[1024];
     Float_t fPy[1024];
     Float_t fPz[1024];
-    TTree*  outTree     =   new TTree(Form("Phi_S%I_E%i_M%i",atoi(argv[3]),kEnergy,fOption),Form("Phi_S%I_E%i_M%i",atoi(argv[3]),kEnergy,fOption));
+    TTree*  outTree     =   new TTree(Form("Phi_S%i_E%i_M%i",atoi(argv[3]),kEnergy,fOption),Form("Phi_S%i_E%i_M%i",atoi(argv[3]),kEnergy,fOption));
     outTree->Branch       ("nPhi",  &nPhi,  "nPhi/I");
     outTree->Branch       ("fPx",   &fPx,   "fPx[nPhi]/F");
     outTree->Branch       ("fPy",   &fPy,   "fPy[nPhi]/F");
     outTree->Branch       ("fPz",   &fPz,   "fPz[nPhi]/F");
+    
+    //  Output Histos
+    TH1D*   kEventCount =   new TH1D( "kEventCount", "kEventCount", 10, -0.5, 9.5 );
     
     // PYTHIA INITIALISATION
     Pythia8::Pythia pythia;
@@ -340,10 +343,12 @@ main
             fPz[nPhi]   =   Current_Particle.pz();
             nPhi++;
         }
-        outTree->Fill();
+        kEventCount->Fill(nPhi);
+        if ( nPhi > 0 ) outTree->Fill();
     }
     fStopTimer("Production");
     //
+    kEventCount->Write();
     outTree->Write();
     //
     outFile     ->Close();
