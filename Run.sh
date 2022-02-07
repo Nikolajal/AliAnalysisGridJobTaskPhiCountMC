@@ -26,7 +26,7 @@ for run in $(seq $strun $(($strun + $nruns - 1))); do
     
     echo "[---] starting run: $runid"
 
-    ./exe/MCG_PhiAnalysis result/MC_Production/outGeneratorMC_$runid.root $nevents $runid 0 >& ./result/MC_Production/log.$runid.log &
+    ./MCG_PhiAnalysis result/Data/outGeneratorMC_$runid.root $nevents $runid 0 >& ./result/Logs/log.$runid.log &
 
     sleep 1s
 
