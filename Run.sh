@@ -3,6 +3,7 @@
 g++ ./MCG_PhiAnalysis.C -o ./MCG_PhiAnalysis -std=c++11 `root-config --cflags --ldflags --libs --glibs --evelibs` `pythia8-config --cflags --libs`
 #
 mkdir -p result/MC_Production/
+mkdir -p result/Logs/
 
 strun=0
 nruns=$((10-$strun))
