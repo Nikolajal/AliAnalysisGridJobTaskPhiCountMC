@@ -2,7 +2,7 @@
 #
 g++ ./MCG_PhiAnalysis.C -o ./MCG_PhiAnalysis -std=c++11 `root-config --cflags --ldflags --libs --glibs --evelibs` `pythia8-config --cflags --libs`
 #
-mkdir -p result/MC_Production/
+mkdir -p result/Data/
 mkdir -p result/Logs/
 
 strun=0
@@ -27,7 +27,7 @@ for run in $(seq $strun $(($strun + $nruns - 1))); do
     
     echo "[---] starting run: $runid"
 
-    ./MCG_PhiAnalysis result/Data/outGeneratorMC_$runid.root $nevents $runid 0 >& ./result/Logs/log.$runid.log &
+    ./MCG_PhiAnalysis ./result/Data/outGeneratorMC_$runid $nevents $runid 0 >& ./result/Logs/log.$runid.log &
 
     sleep 1s
 
