@@ -1,6 +1,6 @@
 Executable = "/alice/cern.ch/user/n/nrubini/AliAnalysisGridJobTaskPhiCountMC/starter.sh";
 Validationcommand = "/alice/cern.ch/user/n/nrubini/AliAnalysisGridJobTaskPhiCountMC/validation.sh";
-Arguments = "bash Run.sh $1 $2 $3 $4 $5";
+Arguments = "bash Run.sh $1 #alien_counter_04i# $2 $3";
 
 Requirements = ( other.Type == "machine" );
 
@@ -22,15 +22,16 @@ TTL = "86400";
 Price = 1;
 Workdirectorysize = { "12000MB" };
 
-Split = "production:1-10";
+Split = "production:1-2";
 SplitArguments = "#alien_counter#";
 
 InputFile = {
-	"LF:/alice/cern.ch/user/n/nrubini/test/test.sh"
+    "LF:/alice/cern.ch/user/n/nrubini/AliAnalysisGridJobTaskPhiCountMC/Run.sh"
+    "LF:/alice/cern.ch/user/n/nrubini/AliAnalysisGridJobTaskPhiCountMC/MCG_PhiAnalysis.C"
 };
 
 OutputArchive = {
 	"log_archive.zip:stdout,stderr,*.log@",
 	"root_archive.zip:*.root@"
 };
-OutputDir = "/alice/cern.ch/user/n/nrubini/test/out/#alien_counter_03i#";
+OutputDir = "/alice/cern.ch/user/n/nrubini/AliAnalysisGridJobTaskPhiCountMC/out/#alien_counter_04i#/";
